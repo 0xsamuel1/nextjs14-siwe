@@ -18,13 +18,13 @@ import { injected } from "wagmi/connectors";
 export const AuthShowcase: React.FC = () => {
   // Hooks
   const { data: sessionData } = useSession();
-  console.log(`sessionData?.user`, sessionData?.user);
+  // console.log(`sessionData?.user`, sessionData?.user);
   const { data: secretMessage } = api.example.getSecretMessage.useQuery(
     undefined, // no input
     { enabled: sessionData?.user !== undefined },
   );
 
-  console.log(`secretMessage`, secretMessage);
+  // console.log(`secretMessage`, secretMessage);
 
   const [showConnection, setShowConnection] = useState(false);
 

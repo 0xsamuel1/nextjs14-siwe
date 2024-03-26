@@ -11,6 +11,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { SiweMessage } from "siwe";
 import { getCsrfToken } from "next-auth/react";
 import { cookies } from "next/headers";
+import credentialsProvider from "next-auth/providers/credentials";
+import { ethers } from "ethers";
 
 interface SessionI extends DefaultSession {
   user: {
@@ -19,6 +21,13 @@ interface SessionI extends DefaultSession {
     // role: UserRole;
   } & DefaultSession["user"];
 }
+
+// declare module "next-auth" {
+//   interface SessionI extends DefaultSession {
+//     address: string;
+//     chainId: number;
+//   }
+// }
 
 // Auth Options
 // ========================================================
@@ -55,25 +64,25 @@ export const authOptions: NextAuthOptions = {
           placeholder: "0x0",
         },
       },
-      authorize: async (credentials) => {
+      authorize: async (credentials, req) => {
         try {
           const siwe = new SiweMessage(
             JSON.parse(credentials!.message ?? "{}") as Partial<SiweMessage>,
           );
-          const nonce = await getCsrfToken();
-          const csrf = cookies()
-            .get("next-auth.csrf-token")
-            ?.value.split("|")[0];
+          const nonce = await getCsrfToken({ req: { headers: req.headers } });
+          // const csrf = cookies()
+          //   .get("next-auth.csrf-token")
+          //   ?.value.split("|")[0];
 
           const fields = await siwe.verify({
             signature: credentials?.signature ?? "",
           });
 
-          console.log(`csrf`, csrf);
+          // console.log(`csrf`, csrf);
           console.log(`nonce`, nonce);
           console.log(`fields.data.nonce`, fields.data.nonce);
 
-          if (fields.data.nonce !== csrf) {
+          if (fields.data.nonce !== nonce) {
             return null;
           }
 
